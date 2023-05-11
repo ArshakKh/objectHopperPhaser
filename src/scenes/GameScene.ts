@@ -12,6 +12,7 @@ export class GameScene extends BaseScene {
 	public position: number;
 	public player: Player;
 	public road: Road;
+	// @ts-ignore
 	public renderer: Renderer;
 
 	public background: Phaser.GameObjects.Image;
@@ -115,6 +116,8 @@ export class GameScene extends BaseScene {
 
 	private handleInput(delta: number, playerSegment: TrackSegment) {
 		const dlt = delta * 0.01;
+		this.player.speed = Util.accelerate(this.player.speed, Util.interpolate(gameSettings.accel, 0, Util.percentRemaining(this.player.speed, gameSettings.maxSpeed) ), dlt);
+		this.player.accelerating = true;
 
 		if (this.cursors.up.isDown) {
 			this.player.speed = Util.accelerate(this.player.speed, Util.interpolate(gameSettings.accel, 0, Util.percentRemaining(this.player.speed, gameSettings.maxSpeed) ), dlt);

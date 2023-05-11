@@ -36,8 +36,6 @@ export class Renderer {
 		// Renderer.drawPolygon(ctx, x1 - w1 - r1, y1, x1 - w1, y1, x2 - w2, y2, x2 - w2 - r2, y2, colors.RUMBLE);
 		// Renderer.drawPolygon(ctx, x1 + w1 + r1, y1, x1 + w1, y1, x2 + w2, y2, x2 + w2 + r2, y2, colors.RUMBLE);
 		// Renderer.drawPolygon(ctx, x1 - w1, y1, x1 + w1, y1, x2 + w2, y2, x2 - w2, y2, colors.ROAD);
-
-
 		// const lanew1 = w1 * 2 / lanes;
 		// const lanew2 = w2 * 2 / lanes;
 		// let lanex1 = x1 - w1 + lanew1;
