@@ -116,11 +116,12 @@ export class GameScene extends BaseScene {
 
 	private handleInput(delta: number, playerSegment: TrackSegment) {
 		const dlt = delta * 0.01;
-		this.player.speed = Util.accelerate(this.player.speed, Util.interpolate(gameSettings.accel, 0, Util.percentRemaining(this.player.speed, gameSettings.maxSpeed) ), dlt);
-		this.player.accelerating = true;
+		// this.player.speed = Util.accelerate(this.player.speed, Util.interpolate(gameSettings.accel, 0, Util.percentRemaining(this.player.speed, gameSettings.maxSpeed) ), dlt);
+		// this.player.accelerating = true;
 
 		if (this.cursors.up.isDown) {
-			this.player.speed = Util.accelerate(this.player.speed, Util.interpolate(gameSettings.accel, 0, Util.percentRemaining(this.player.speed, gameSettings.maxSpeed) ), dlt);
+			const speed = Util.accelerate(this.player.speed, Util.interpolate(gameSettings.accel, 0, Util.percentRemaining(this.player.speed, gameSettings.maxSpeed) ), dlt);
+			this.player.speed = speed < 200 ? speed : 200;
 			this.player.accelerating = true;
 		} else if (this.cursors.down.isDown) {
 			this.player.speed = Util.accelerate(this.player.speed, gameSettings.breaking, dlt);

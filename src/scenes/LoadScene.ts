@@ -37,8 +37,6 @@ export class LoadScene extends BaseScene {
 		this.load.image('ball', './assets/ball.png');
 		this.load.image('puddle', './assets/puddle.png');
 
-		// this.load.spritesheet('playercar', './assets/car-blue.png', { frameWidth: 128, frameHeight: 128 });
-
 		this.load.binary('playercar', './assets/3d/car.glb');
 
 	}

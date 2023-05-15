@@ -1,9 +1,9 @@
-import { TrackSegment } from './TrackSegment';
-import { gameSettings } from '../config/GameSettings';
-import { Util } from './Util';
-import { SEGMENT } from './SegmentType';
-import { Prop } from './Prop';
-import { GameScene } from '../scenes/GameScene';
+import {TrackSegment} from './TrackSegment';
+import {gameSettings} from '../config/GameSettings';
+import {Util} from './Util';
+import {SEGMENT} from './SegmentType';
+import {Prop} from './Prop';
+import {GameScene} from '../scenes/GameScene';
 
 export class Road {
 	public scene: GameScene;
@@ -97,10 +97,10 @@ export class Road {
 		this.createRandomProps();
 	}
 
-	public addProp(scene: GameScene, segmentIndex: number, name: string, offset: number, height: number = 0, scale: number = 3000, flipX: boolean = false, collides: boolean = false): boolean {
+	public addProp(scene: GameScene, segmentIndex: number, name: string, offset: number, height: number = 0, scale: number = 3000, flipX: boolean = false, collides: boolean = false, isGroup: boolean = false): boolean {
 		try {
 			const seg = this.segments[segmentIndex];
-			const prop = new Prop(scene, name, offset, height, scale, flipX, collides);
+			const prop = new Prop(scene, name, offset, height, scale, flipX, collides, isGroup);
 			seg.props.add(prop);
 
 			return true;
@@ -110,7 +110,7 @@ export class Road {
 	}
 
 	public hideAllProps(): void {
-		this.segments.forEach( (segment: TrackSegment) => {
+		this.segments.forEach((segment: TrackSegment) => {
 			for (const prop of segment.props) {
 				prop.sprite.setVisible(false);
 			}
@@ -152,7 +152,7 @@ export class Road {
 			this.addProp(this.scene, n, type, negated ? -offset : offset, 0, scale, false);
 		}
 
-		for (let n = 0; n < this.segments.length; n ++) {
+		for (let n = 0; n < this.segments.length; n++) {
 			const offset = Phaser.Math.FloatBetween(1, 1.1);
 			const negated = Math.random() - 0.5 > 0;
 
@@ -161,9 +161,35 @@ export class Road {
 			type = 'boulder1';
 			scale = 3000;
 
-			this.addProp(this.scene, n, type, negated ? -offset : offset, 0, scale, false);
+			// this.addProp(this.scene, n, type, negated ? -offset : offset, 0, scale, false);
+		}
+
+		for (let n = 0; n < this.segments.length; n += 100) {
+			let type;
+			const scale = 2000;
+			type = 'puddle';
+
+			this.addProp(this.scene, n, type, -0.5, 0, scale, false, false, true);
+			this.addProp(this.scene, n, type, -0.2, 0, scale, false, false, true);
+			this.addProp(this.scene, n, type, 0.2, 0, scale, false, false, true);
+			this.addProp(this.scene, n, type, 0.5, 0, scale, false, false, true);
 		}
 	}
+
+	public createPuddle() {
+		try {
+			const puddleGroup = this.scene.add.group();
+			const puddle = this.scene.add.image(0, 0, 'puddle');
+
+			for (let n = 0; n < 4; n++) {
+				puddleGroup.add(puddle);
+			}
+			return true;
+		} catch (e) {
+			return false;
+		}
+	}
+
 	public removeProps(sourceSegment: TrackSegment, breadth: number, side: number) {
 		const isLeft = side < 0;
 		const breadthSegments = this.segments.slice(sourceSegment.index - breadth, sourceSegment.index + breadth);

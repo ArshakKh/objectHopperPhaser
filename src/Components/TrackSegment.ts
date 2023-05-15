@@ -18,7 +18,8 @@ export class TrackSegment {
 		this.index = z;
 		this.p1 = new SegmentPoint(0, lastY, z * gameSettings.segmentLength);
 		this.p2 = new SegmentPoint(0, y, (z + 1) * gameSettings.segmentLength);
-		this.colors = Math.floor(z / gameSettings.rumbleLength) % 2 ? DarkColors : DarkColors;
+		// this.colors = Math.floor(z / gameSettings.rumbleLength) % 2 ? DarkColors : LightColors;
+		this.colors = DarkColors;
 		this.curve = curve;
 		this.clip = 0;
 
