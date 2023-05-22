@@ -1,7 +1,7 @@
-import { SegmentPoint } from './SegmentPoint';
-import { Util } from './Util';
-import { gameSettings } from '../config/GameSettings';
-import { GameScene } from '../scenes/GameScene';
+import {SegmentPoint} from './SegmentPoint';
+import {Util} from './Util';
+import {gameSettings} from '../config/GameSettings';
+import {GameScene} from '../scenes/GameScene';
 
 export class Renderer {
 	public static project(sp: SegmentPoint, cameraX: number, cameraY: number, cameraZ: number, cameraDepth: number, width: number, height: number, roadWidth: number) {
@@ -105,7 +105,7 @@ export class Renderer {
 			maxY = segment.p2.screen.y;
 		}
 
-		// draw props and cars back to front
+		// draw props back to front
 		for (let n = gameSettings.drawDistance; n > 0; n--) {
 			const segmentIndex = (baseSegment.index + n) % this.scene.road.segments.length;
 			const segment = this.scene.road.segments[segmentIndex];
@@ -113,7 +113,8 @@ export class Renderer {
 			const scale = segment.p1.screen.scale;
 
 			for (const prop of segment.props) {
-				const x = segment.p1.screen.x - 10 + (scale * prop.offset * gameSettings.roadWidth * gameWidth / 2);
+
+				const x = segment.p1.screen.x - 10 + (scale * prop.offset * gameSettings.roadWidth * (gameWidth > 800 ? 400 : gameWidth < 500 ? 400 : gameWidth / 2 ));
 				prop.update(x, segment.p1.screen.y, scale, segment.clip);
 			}
 		}

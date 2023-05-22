@@ -1,4 +1,4 @@
-import { BaseScene } from './BaseScene';
+import {BaseScene} from './BaseScene';
 
 export class LoadScene extends BaseScene {
 	constructor(key: string, options: any) {
@@ -26,19 +26,17 @@ export class LoadScene extends BaseScene {
 		this.load.image('clouds1', './assets/clouds.png');
 		this.load.image('clouds2', './assets/clouds2.png');
 		this.load.image('mountain', './assets/mountain.png');
-		this.load.image('hills', './assets/hills.png');
+		this.load.image('hills', './assets/mountain.png');
 		this.load.image('boulder1', './assets/boulder.png');
 		this.load.image('boulder2', './assets/boulder2.png');
+		this.load.image('boulder3', './assets/boulder3.png');
 		this.load.image('tree1', './assets/tree1.png');
 		this.load.image('tree2', './assets/tree2.png');
 		this.load.image('tree3', './assets/tree3.png');
-		this.load.image('turnsign', './assets/turn-sign.png');
 		this.load.image('background', './assets/bg.png');
 		this.load.image('ball', './assets/ball.png');
+		this.load.image('ball-dirty', './assets/dirty_ball.png');
 		this.load.image('puddle', './assets/puddle.png');
-
-		this.load.binary('playercar', './assets/3d/car.glb');
-
 	}
 
 	public create(): void {

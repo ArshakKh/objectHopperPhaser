@@ -1,12 +1,13 @@
-import { BaseScene } from './BaseScene';
-import { Input } from 'phaser';
-import { Colors } from '../Components/Colors';
-import { gameSettings } from '../config/GameSettings';
-import { Util } from '../Components/Util';
-import { Player } from '../Components/Player';
-import { Road } from '../Components/Road';
-import { Renderer } from '../Components/Renderer';
-import { TrackSegment } from '../Components/TrackSegment';
+import {BaseScene} from './BaseScene';
+import {Input} from 'phaser';
+import {Colors} from '../Components/Colors';
+import {gameSettings} from '../config/GameSettings';
+import {Util} from '../Components/Util';
+import {Player} from '../Components/Player';
+import {Road} from '../Components/Road';
+import {Renderer} from '../Components/Renderer';
+import {TrackSegment} from '../Components/TrackSegment';
+import {Prop} from '../Components/Prop';
 
 export class GameScene extends BaseScene {
 	public position: number;
@@ -15,11 +16,12 @@ export class GameScene extends BaseScene {
 	// @ts-ignore
 	public renderer: Renderer;
 
+	public prop: Prop;
+
 	public background: Phaser.GameObjects.Image;
 	public sky: Phaser.GameObjects.Rectangle;
 	public clouds1: Phaser.GameObjects.TileSprite;
 	public clouds2: Phaser.GameObjects.TileSprite;
-	public clouds3: Phaser.GameObjects.TileSprite;
 	public mountains: Phaser.GameObjects.TileSprite;
 
 	public camera: Phaser.Cameras.Scene2D.Camera;
@@ -28,35 +30,33 @@ export class GameScene extends BaseScene {
 	public hillsBaseY: number;
 
 	public cursors: Input.Keyboard.CursorKeys;
+	public isFirstTime: boolean = true;
+
+	public gameIndex: number = 0;
+
+	public cards: any[] = this.createCards(15);
 
 	constructor(key: string, options: any) {
 		super('GameScene');
 	}
 
 	public create(): void {
-		this.scene.launch('RaceUiScene', this);
 
 		const gameWidth = this.scale.gameSize.width;
 		const gameHeight = this.scale.gameSize.height;
 
 		this.cursors = this.input.keyboard.createCursorKeys();
 		this.camera = this.cameras.main;
-		// this.background = this.add.sprite(800 / 2, (600 / 2) - 60, 'bg');
 
 		this.road = new Road(this);
 
 		this.sky = this.add.rectangle(-10, -20, gameWidth + 20, gameHeight + 30, Colors.SKY.color).setOrigin(0).setZ(0).setDepth(0);
-		this.clouds2 = this.add.tileSprite(-10, 10, gameWidth + 20, 64, 'clouds1').setOrigin(0).setZ(3).setDepth(1);
-		this.clouds3 = this.add.tileSprite(-10, 20, gameWidth + 20, 64, 'clouds2').setOrigin(0).setZ(4).setDepth(2);
-		this.mountains = this.add.tileSprite(-10, gameHeight / 2 - 85, gameWidth + 20, 128, 'mountain').setOrigin(0).setZ(3).setDepth(3);
-		this.clouds1 = this.add.tileSprite(-10, 0, gameWidth + 20, 64, 'clouds1').setOrigin(0).setZ(2).setDepth(4);
-		// this.background = this.add.image(800 / 2, (600 / 2) - 60, 'background');
+		this.mountains = this.add.tileSprite(-10, 0, gameWidth + 20, gameHeight / 2, 'mountain').setOrigin(0).setZ(3).setDepth(3);
 
-		this.hillsBaseY = gameHeight / 2 - 40;
-		this.hills = this.add.tileSprite(-10, this.hillsBaseY, gameWidth + 10, 64, 'hills').setOrigin(0).setZ(5).setDepth(4);
+		this.hillsBaseY = gameHeight / 2;
 
 		this.renderer = new Renderer(this, 5);
-		this.player = new Player(this, 0, gameHeight - 5, gameSettings.cameraHeight * gameSettings.cameraDepth + 300, 'playercar'); // player z helps with collision distances
+		this.player = new Player(this, 0, gameHeight - 5, gameSettings.cameraHeight * gameSettings.cameraDepth); // player z helps with collision distances
 
 		// reset road to empty
 		// currently creates test track
@@ -72,6 +72,7 @@ export class GameScene extends BaseScene {
 		const dx = this.player.speed <= 0 ? 0 : dlt * speedMultiplier;
 
 		this.handleInput(delta, playerSegment);
+		this.moveHandle(delta, playerSegment);
 
 		this.player.y = Util.interpolate(playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent);
 		this.player.x = this.player.x - (dx * speedMultiplier * playerSegment.curve * gameSettings.centrifugal);
@@ -102,16 +103,43 @@ export class GameScene extends BaseScene {
 
 		// update registry
 		this.registry.set('speed', Math.floor(this.player.speed / 10));
-
 	}
+
+	public checkHandle(answer: any, propX: number, propY: number) {
+		console.log(answer, this.cards[this.gameIndex].answer);
+		if (answer.toString() === this.cards[this.gameIndex].answer.toString()) {
+			this.player.jumpInToPuddle(propX, propY);
+			setTimeout(() => {
+				if (this.gameIndex < this.cards.length - 1) {
+					this.gameIndex++;
+				}
+			}, 2000);
+		}
+	}
+
 	// private ------------------------------------
 	private updateBg(offset: number): void {
-		this.clouds1.tilePositionX += 0.05 + offset * this.clouds1.z;
-		this.clouds2.tilePositionX += 0.1 + offset * this.clouds2.z;
-		this.clouds3.tilePositionX += 0.125 + offset * this.clouds3.z;
+		// this.clouds1.tilePositionX += 0.05 + offset * this.clouds1.z;
+		// this.clouds2.tilePositionX += 0.1 + offset * this.clouds2.z;
+		// this.clouds3.tilePositionX += 0.125 + offset * this.clouds3.z;
 		this.mountains.tilePositionX += offset * this.mountains.z;
-		this.hills.tilePositionX += offset * this.hills.z;
-		this.hills.setY(this.hillsBaseY - this.player.pitch * 20);
+		// this.hills.tilePositionX += offset * this.hills.z;
+		// this.hills.setY(this.hillsBaseY - this.player.pitch * 20);
+	}
+
+	private moveHandle(delta: number, playerSegment: TrackSegment) {
+		const dlt = delta * 0.01;
+
+		if (this.road.puddlePosition.length > 0 && playerSegment.index !== this.road.puddlePosition[this.gameIndex] - 1) {
+			const speed = Util.accelerate(this.player.speed, Util.interpolate(gameSettings.accel, 0, Util.percentRemaining(this.player.speed, gameSettings.maxSpeed)), dlt);
+			this.player.speed = speed < 200 ? speed : 200;
+			this.ballJump();
+			this.player.accelerating = true;
+		} else {
+			this.player.speed = Util.accelerate(this.player.speed, gameSettings.breaking, dlt);
+			this.endBallJump();
+			this.isFirstTime = true;
+		}
 	}
 
 	private handleInput(delta: number, playerSegment: TrackSegment) {
@@ -119,12 +147,21 @@ export class GameScene extends BaseScene {
 		// this.player.speed = Util.accelerate(this.player.speed, Util.interpolate(gameSettings.accel, 0, Util.percentRemaining(this.player.speed, gameSettings.maxSpeed) ), dlt);
 		// this.player.accelerating = true;
 
+		// const speed = Util.accelerate(this.player.speed, Util.interpolate(gameSettings.accel, 0, Util.percentRemaining(this.player.speed, gameSettings.maxSpeed) ), dlt);
+		// this.player.speed = speed < 200 ? speed : 200;
+		// this.player.startJump();
+
 		if (this.cursors.up.isDown) {
-			const speed = Util.accelerate(this.player.speed, Util.interpolate(gameSettings.accel, 0, Util.percentRemaining(this.player.speed, gameSettings.maxSpeed) ), dlt);
+			const speed = Util.accelerate(this.player.speed, Util.interpolate(gameSettings.accel, 0, Util.percentRemaining(this.player.speed, gameSettings.maxSpeed)), dlt);
 			this.player.speed = speed < 200 ? speed : 200;
+			console.log(playerSegment.index);
+			// this.player.speed = speed;
+			this.ballJump();
 			this.player.accelerating = true;
 		} else if (this.cursors.down.isDown) {
 			this.player.speed = Util.accelerate(this.player.speed, gameSettings.breaking, dlt);
+			// this.player.endJump();
+			this.isFirstTime = true;
 		} else {
 			this.player.accelerating = false;
 			this.player.speed = Util.accelerate(this.player.speed, gameSettings.decel, dlt);
@@ -133,5 +170,36 @@ export class GameScene extends BaseScene {
 		if (this.player.speed > 500 && this.player.screeching) {
 			this.player.speed = Util.accelerate(this.player.speed, gameSettings.screechDecel, dlt);
 		}
+	}
+
+	private ballJump() {
+		if (this.isFirstTime) {
+			this.player.startJump();
+			this.isFirstTime = false;
+		}
+	}
+
+	private endBallJump() {
+		if (!this.isFirstTime) {
+			this.player.endJump();
+			this.isFirstTime = true;
+		}
+	}
+
+	private createCards(range: number) {
+
+		const innerCards = [];
+
+		for (let i = 0; i < 4; i++) {
+			const num = [];
+			while (num.length < 4) {
+				const r = Math.floor(Math.random() * range);
+				if (num.indexOf(r) === -1) {
+					num.push(r);
+				}
+			}
+			innerCards[i] = {count: num, answer: num[Math.floor(Math.random() * (num.length - 1))]};
+		}
+		return innerCards;
 	}
 }

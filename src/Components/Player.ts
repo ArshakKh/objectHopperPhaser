@@ -1,13 +1,9 @@
 import {GameScene} from '../scenes/GameScene';
-import {Phaser3D} from '../libs/Phaser3D';
-
-const HALFPI = Math.PI / 2;
 
 export class Player {
 	public position: Phaser.Math.Vector3;
 	public sprite: Phaser.GameObjects.Rectangle;
 	public scene: GameScene;
-	// public p3d: Phaser3D;
 	public model: any;
 	public turn: number;
 	public pitch: number;
@@ -16,12 +12,16 @@ export class Player {
 	public accelerating: boolean = false;
 	public screeching: boolean = false;
 	public hero: any;
+	public jumpingTween: any;
 	public power: number;
 	public timer: Phaser.Time.TimerEvent;
-	public collisionRadius: number = 20;
+	public heroX: number;
+	public heroY: number;
+	public screenW: number;
+	public screenH: number;
 	private turnVector: Phaser.Math.Vector3;
 
-	constructor(scene: GameScene, x: number, y: number, z: number, modelKey: string) {
+	constructor(scene: GameScene, x: number, y: number, z: number) {
 		this.position = new Phaser.Math.Vector3(x, y, z);
 		this.scene = scene;
 		this.turn = 0;
@@ -31,96 +31,82 @@ export class Player {
 		this.turnVector = new Phaser.Math.Vector3(0, 0, 0);
 		this.power = 0;
 
-		const particleSettings = {
-			x: -100,
-			y: -100,
-			lifespan: 500,
-			frequency: 66,
-			frame: 0,
-			blendMode: 'NORMAL',
-			gravityY: -100,
-			speed: 0,
-			rotate: {onEmit: () => Math.random() * 359},
-			scale: {start: 0.3, end: 2},
-		};
-		// this.p3d = new Phaser3D(this.scene, {fov: 35, x: 0, y: 7, z: -20, antialias: false});
-		// this.p3d.view.setDepth(20);
-		// this.p3d.addGLTFModel(modelKey);
-		//
-		// this.scene.add.sprite(50, 40, modelKey );
-		//
-		// this.p3d.camera.lookAt(0, 5.1, 0);
-		//
-		// this.p3d.add.hemisphereLight({skyColor: 0xefefff, groundColor: 0x111111, intensity: 2});
-		// this.p3d.on('loadgltf', (gltf: any, model: any) => {
-		// 	model.rotateY(HALFPI);
-		// 	model.position.set(0, 0, 0);
-		// 	model.scale.set(1, 1, 1);
-		// 	this.model = model;
-		// });
+		this.screenW = this.scene.camera.width;
+		this.screenH = this.scene.camera.height;
 
-		const screenW = this.scene.camera.width;
-		const screenH = this.scene.camera.height;
-
-		const hero = this.scene.physics.add.sprite(screenW / 2, 0, 'ball');
+		const hero = this.scene.add.sprite(0, 0, 'ball');
+		this.hero = hero;
 		hero.setDepth(20);
 
-		const heroW = screenW / 2 ;
-		const heroH = screenH - hero.height;
+		this.heroX = this.screenW / 2;
+		this.heroY = this.screenH - (this.screenH * 0.3);
 
-		hero.setPosition(heroW, heroH);
-		hero.setScale(0.5, 0.5);
-
-		// set the gravity
-		hero.setGravityY(1000);
+		hero.setPosition(this.heroX, this.heroY);
+		hero.setScale(0.4, 0.4);
 		this.hero = hero;
-		// place the ground
-		const groundX = screenW / 2;
-		const groundY = screenH * .95;
-		const ground = this.scene.physics.add.sprite(groundX, groundY, 'puddle');
-		// size the ground
-		ground.displayWidth = screenW * 1.1;
-		// make the ground stay in place
-		ground.setImmovable();
-		// add the colliders
-		this.scene.physics.add.collider(hero, ground);
-
-		this.scene.input.on('pointerdown', this.startJump, this);
-		this.scene.input.on('pointerup', this.endJump, this);
-
-		const yy = heroH - 170;
-		this.scene.tweens.add({
-			targets: hero,
-			y: yy,
-			duration: 800,
-			yoyo: true,
-			repeat: -1,
-			ease: 'circ.out',
-		});
-
-		console.log();
 
 	}
 
 	public startJump() {
-		this.timer = this.scene.time.addEvent({
-			delay: 200,
-			callback: this.tick,
-			callbackScope: this,
-			repeat: 5,
+		this.hero.setTexture('ball');
+		this.scene.tweens.add({
+			targets: this.hero,
+			x: this.heroX,
+			y: this.heroY,
+			duration: 500,
+			repeat: 0,
+			ease: 'Quad.easeInOut',
+			onComplete: () => {
+				this.jumpingTween.play();
+			},
 		});
-		this.hero.setVelocityY(-400);
+		this.jumpingTween = this.scene.tweens.add({
+			targets: this.hero,
+			x: this.heroX,
+			y: this.screenH / 2,
+			duration: 1000,
+			yoyo: true,
+			repeat: -1,
+			paused: true,
+			ease: 'Quad.easeInOut',
+		});
 	}
 
 	public endJump() {
-		this.timer.remove();
+		this.jumpingTween.stop();
+		this.scene.tweens.add({
+			targets: this.hero,
+			y: this.heroY,
+			duration: 800,
+			repeat: 0,
+			ease: 'Quad.easeOut',
+		});
 	}
 
-	public tick() {
-		// if (this.power < 5) {
-		// 	this.power += .1;
-		// 	console.log(this.power);
-		// }
+	public jumpInToPuddle(propX: number, propY: number) {
+		this.scene.tweens.add({
+			targets: this.hero,
+			x: propX,
+			y: this.screenH / 2,
+			duration: 500,
+			ease: 'Quad.easeInOut',
+			repeat: 0,
+			onComplete: () => {
+				yTween.play();
+			},
+		});
+
+		const yTween = this.scene.tweens.add({
+			targets: this.hero,
+			y: propY,
+			duration: 500,
+			ease: 'Quad.easeInOut',
+			repeat: 0,
+			paused: true,
+			onComplete: () => {
+				this.hero.setTexture('ball-dirty');
+			},
+		});
 	}
 
 	public get x(): number {

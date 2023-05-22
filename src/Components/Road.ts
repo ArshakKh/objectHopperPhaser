@@ -9,11 +9,14 @@ export class Road {
 	public scene: GameScene;
 	public segments: TrackSegment[];
 	public trackLength: number;
+	public puddlePosition: any[] = [];
+	public cards: any[];
 
 	constructor(scene: GameScene) {
 		this.scene = scene;
 		this.segments = [];
 		this.trackLength = 0;
+		this.cards = this.scene.cards;
 	}
 
 	public addRoadSegment(curve: number, y: number): void {
@@ -97,10 +100,10 @@ export class Road {
 		this.createRandomProps();
 	}
 
-	public addProp(scene: GameScene, segmentIndex: number, name: string, offset: number, height: number = 0, scale: number = 3000, flipX: boolean = false, collides: boolean = false, isGroup: boolean = false): boolean {
+	public addProp(scene: GameScene, segmentIndex: number, name: string, offset: number, height: number = 0, scale: number = 3000, flipX: boolean = false, collides: boolean = false, isGroup: boolean = false, title: string = 'undef'): boolean {
 		try {
 			const seg = this.segments[segmentIndex];
-			const prop = new Prop(scene, name, offset, height, scale, flipX, collides, isGroup);
+			const prop = new Prop(scene, name, offset, height, scale, flipX, collides, isGroup, title);
 			seg.props.add(prop);
 
 			return true;
@@ -157,36 +160,44 @@ export class Road {
 			const negated = Math.random() - 0.5 > 0;
 
 			let type;
-			let scale = 30000;
-			type = 'boulder1';
-			scale = 3000;
+			let scale = 1500;
 
-			// this.addProp(this.scene, n, type, negated ? -offset : offset, 0, scale, false);
-		}
-
-		for (let n = 0; n < this.segments.length; n += 100) {
-			let type;
-			const scale = 2000;
-			type = 'puddle';
-
-			this.addProp(this.scene, n, type, -0.5, 0, scale, false, false, true);
-			this.addProp(this.scene, n, type, -0.2, 0, scale, false, false, true);
-			this.addProp(this.scene, n, type, 0.2, 0, scale, false, false, true);
-			this.addProp(this.scene, n, type, 0.5, 0, scale, false, false, true);
-		}
-	}
-
-	public createPuddle() {
-		try {
-			const puddleGroup = this.scene.add.group();
-			const puddle = this.scene.add.image(0, 0, 'puddle');
-
-			for (let n = 0; n < 4; n++) {
-				puddleGroup.add(puddle);
+			switch (Phaser.Math.Between(1, 3)) {
+				case 1:
+					type = 'boulder1';
+					scale = 1500;
+					break;
+				case 2:
+					type = 'boulder2';
+					scale = 3000;
+					break;
+				case 3:
+					type = 'boulder3';
+					scale = 3000;
+					break;
 			}
-			return true;
-		} catch (e) {
-			return false;
+
+			this.addProp(this.scene, n, type, negated ? -offset : offset, 0, scale, false);
+		}
+		let index = -1;
+		for (let n = this.segments.length; n > 0; n -= 50) {
+			if (index < this.cards.length && this.cards[index]) {
+				let type;
+				const scale = this.scene.camera.width < 500 ? 1500 : 2000;
+				type = 'puddle';
+				const text = this.cards[index].count;
+				this.puddlePosition.push(n);
+				const offset1 = this.scene.camera.width < 500 ? -0.35 : -0.55;
+				const offset2 = this.scene.camera.width < 500 ? -0.11 : -0.18;
+				const offset3 = this.scene.camera.width < 500 ? 0.11 : 0.18;
+				const offset4 = this.scene.camera.width < 500 ? 0.35 : 0.55;
+
+				this.addProp(this.scene, n, type, offset1, 0, scale, false, false, true, text[0].toString());
+				this.addProp(this.scene, n, type, offset2, 0, scale, false, false, true, text[1].toString());
+				this.addProp(this.scene, n, type, offset3, 0, scale, false, false, true, text[2].toString());
+				this.addProp(this.scene, n, type, offset4, 0, scale, false, false, true, text[3].toString());
+			}
+			index++;
 		}
 	}
 
@@ -204,4 +215,5 @@ export class Road {
 			}
 		}
 	}
+
 }

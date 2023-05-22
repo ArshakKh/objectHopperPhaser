@@ -10,7 +10,7 @@ export const Colors = {
 	RUMBLE_LIGHT: new Phaser.Display.Color(200, 200, 200, 1),
 	RUMBLE_DARK: new Phaser.Display.Color(177, 64, 64, 1),
 
-	SKY: new Phaser.Display.Color(127, 127, 255, 1),
+	SKY: new Phaser.Display.Color(127, 127, 255, 0),
 };
 
 export const DarkColors = {
